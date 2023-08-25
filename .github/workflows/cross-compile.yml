@@ -1,0 +1,47 @@
+name: Compile and Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-apple-darwin
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --release --target=${{ matrix.target }}
+
+      - name: Archive
+        uses: actions/upload-artifact@v2
+        with:
+          name: ask-linux-gnu
+          path: target/${{ matrix.target }}/release/ask
+
+      - name: Upload to GitHub Releases
+        uses: softprops/action-gh-release@v1
+        with:
+          files:
+            target/${{ matrix.target }}/release/ask
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
