@@ -24,6 +24,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
+name = "ask-cli"
+version = "0.1.0"
+dependencies = [
+ "crossterm 0.27.0",
+ "inquire",
+ "openai-rust",
+ "tokio",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -583,16 +593,6 @@ name = "once_cell"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
-
-[[package]]
-name = "openai"
-version = "0.1.0"
-dependencies = [
- "crossterm 0.27.0",
- "inquire",
- "openai-rust",
- "tokio",
-]
 
 [[package]]
 name = "openai-rust"

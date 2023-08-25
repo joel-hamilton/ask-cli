@@ -15,14 +15,14 @@ fi
 
 # Choose binary to download
 if [ "$UNAME" = "Darwin" ] ; then
-    url="https://link.to/your.app/releases/openai-${ARCH}-apple-darwin"
+    url="https://link.to/your.app/releases/ask-cli-${ARCH}-apple-darwin"
 elif [ "$UNAME" = "Linux" ] ; then
-    url="https://link.to/your.app/releases/openai-${ARCH}-unknown-linux-gnu"
+    url="https://link.to/your.app/releases/ask-cli-${ARCH}-unknown-linux-gnu"
 fi
 
 # Downloading the correct binary
 echo "Downloading from $url..."
-curl -fsSL -o openai $url
+curl -fsSL -o ask-cli $url
 
 # Checking if curl succeeded
 if [ $? -ne 0 ] ; then
@@ -30,8 +30,8 @@ if [ $? -ne 0 ] ; then
     exit 1
 fi
 
-chmod +x openai
-mv openai /usr/local/bin/
+chmod +x ask-cli
+mv ask-cli /usr/local/bin/
 
 echo "Installation completed!"
 exit 0

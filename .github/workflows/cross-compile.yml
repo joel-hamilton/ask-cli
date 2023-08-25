@@ -28,20 +28,20 @@ jobs:
       - name: Build
         uses: actions-rs/cargo@v1
         with:
-          use-cross: true
+          # use-cross: true
           command: build
           args: --release --target=${{ matrix.target }}
 
-      - name: Archive
-        uses: actions/upload-artifact@v2
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: ask-linux-gnu
-          path: target/${{ matrix.target }}/release/ask
+          name: ask-cli-artifact
+          path: target/${{ matrix.target }}/release/ask-cli
 
       - name: Upload to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
           files:
-            target/${{ matrix.target }}/release/ask
+            target/${{ matrix.target }}/release/ask-cli
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
