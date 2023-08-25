@@ -1,9 +1,9 @@
 name: Compile and Release
 
-on:
+on: 
   push:
-    branches:
-      - main
+    tags:
+    - '*'
 
 jobs:
   build:
@@ -39,9 +39,6 @@ jobs:
           path: target/${{ matrix.target }}/release/ask-cli
 
       - name: Upload to GitHub Releases
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          files:
-            target/${{ matrix.target }}/release/ask-cli
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: target/${{ matrix.target }}/release/ask/cli
