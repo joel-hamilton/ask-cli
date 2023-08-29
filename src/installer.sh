@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Identify the OS and Architecture
@@ -15,14 +16,14 @@ fi
 
 # Choose binary to download
 if [ "$UNAME" = "Darwin" ] ; then
-    url="https://link.to/your.app/releases/ask-cli-${ARCH}-apple-darwin"
+    url="https://github.com/joel-hamilton/ask-cli//releases/latest/download/ask-cli-aarch64-apple-darwin.tar.gz"
 elif [ "$UNAME" = "Linux" ] ; then
-    url="https://link.to/your.app/releases/ask-cli-${ARCH}-unknown-linux-gnu"
+    url="https://github.com/joel-hamilton/ask-cli//releases/latest/download/ask-cli-x86_64-unknown-linux-gnu.tar.gz"
 fi
 
 # Downloading the correct binary
 echo "Downloading from $url..."
-curl -fsSL -o ask-cli $url
+curl -fsSL -o ask-cli.tar.gz $url
 
 # Checking if curl succeeded
 if [ $? -ne 0 ] ; then
@@ -30,8 +31,26 @@ if [ $? -ne 0 ] ; then
     exit 1
 fi
 
-chmod +x ask-cli
-mv ask-cli /usr/local/bin/
+# Unzip the download
+tar -xvzf ask-cli.tar.gz
+
+# Checking if unzip succeeded
+if [ $? -ne 0 ] ; then
+    echo "Failed to unzip ask-cli.tar.gz, please check the download."
+    exit 1
+fi
+
+chmod +x ask-cli 
+
+# Move the file
+mv ask-cli /usr/local/bin/ask
+
+# Checking if mv succeeded
+if [ $? -ne 0 ] ; then
+    echo "Failed to move ask-cli to /usr/local/bin/, please check permissions."
+    rm -f ask-cli
+    exit 1
+fi
 
 echo "Installation completed!"
 exit 0

@@ -11,6 +11,8 @@ use std::io::stdout;
 
 #[tokio::main]
 async fn main() -> InquireResult<()> {
+    // TODO get key from config file, if existing, or prompt for key and save in config file
+
     let client = Client::new(&std::env::var("OPENAI_API_KEY").unwrap());
     let mut messages: Vec<chat::Message> = Vec::new();
 
