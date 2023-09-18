@@ -11,6 +11,8 @@ use crate::traits::api_client::Api;
 use crate::ui::ui;
 
 use anyhow::Error;
+use api::ApiClient;
+use chat::Chat;
 use crossterm::{
     cursor::{MoveTo, MoveToPreviousLine},
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
@@ -23,16 +25,17 @@ use crossterm::{
     ExecutableCommand,
 };
 use ratatui::{prelude::*, widgets::*};
-use state::State;
+use state::{ChatState, InputState};
+use std::char::CharTryFromError;
 // use inquire::{error::InquireResult, Editor, Text};
 use std::io::{self, stdout};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let key = std::env::var("OPENAI_API_KEY").unwrap();
-    let api_client = api::ApiClient::new(&key, api::ClientType::OPENAI);
-    let mut state = state::State::default();
-
+    let mut api_client = api::ApiClient::new(&key, api::ClientType::OPENAI);
+    let mut chat_state = ChatState::default();
+    let mut input_state = InputState::default();
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -41,7 +44,13 @@ async fn main() -> Result<(), Error> {
     let mut terminal = Terminal::new(backend)?;
 
     // create app and run it
-    let res = run_app(&mut terminal, &mut state);
+    let res = run_app(
+        &mut api_client,
+        &mut terminal,
+        &mut chat_state,
+        &mut input_state,
+    )
+    .await;
 
     // restore terminal
     disable_raw_mode()?;
@@ -56,73 +65,23 @@ async fn main() -> Result<(), Error> {
         println!("{err:?}");
     }
 
-    // let _ = execute!(
-    //     stdout(),
-    //     Clear(ClearType::All),
-    //     Clear(ClearType::Purge),
-    //     MoveTo(0, 0)
-    // );
-
-    // loop {
-    //     let mut content = Text::new("Prompt:").prompt()?;
-
-    //     if content == "" {
-    //         _ = execute!(
-    //             stdout(),
-    //             MoveToPreviousLine(1),
-    //             Clear(ClearType::CurrentLine)
-    //         );
-
-    //         content = Editor::new("Prompt:").prompt()?;
-
-    //         _ = execute!(
-    //             stdout(),
-    //             MoveToPreviousLine(1),
-    //             Clear(ClearType::CurrentLine)
-    //         );
-
-    //         println!("Prompt: {}", content);
-    //     }
-
-    //     if content == "" {
-    //         _ = execute!(
-    //             stdout(),
-    //             MoveToPreviousLine(1),
-    //             Clear(ClearType::CurrentLine)
-    //         );
-    //         continue;
-    //     }
-
-    //     state.get_chat().push("user", &content);
-    //     let messages = api_client.request(&state.get_chat().get_messages()).await;
-    //     state.get_chat().set_messages(&messages);
-
-    //     _ = stdout().execute(PrintStyledContent(
-    //         "Response: "
-    //             .with(Color::DarkMagenta)
-    //             .attribute(Attribute::Bold),
-    //     ));
-
-    //     println!(
-    //         "{}",
-    //         state.get_chat().get_messages()[messages.len() - 1].content
-    //     )
-    // }
-
     Ok(())
 }
 
-fn run_app<B: Backend>(terminal: &mut Terminal<B>, state: &mut State) -> io::Result<()> {
+async fn run_app<B: Backend, A: Api + 'static>(
+    api_client: &mut A,
+    terminal: &mut Terminal<B>,
+    chat_state: &mut ChatState,
+    input_state: &mut InputState,
+) -> io::Result<()> {
     loop {
-        // let mut state_clone = state.get_clone();
-        terminal.draw(|f| ui(f, state))?;
+        terminal.draw(|f| ui(f, chat_state, input_state))?;
 
-        let input = state.get_input();
         if let Event::Key(key) = event::read()? {
-            match input.input_mode {
+            match input_state.input.input_mode {
                 InputMode::Normal => match key.code {
                     KeyCode::Char('e') => {
-                        input.input_mode = InputMode::Editing;
+                        input_state.input.input_mode = InputMode::Editing;
                     }
                     KeyCode::Char('q') => {
                         return Ok(());
@@ -131,25 +90,32 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, state: &mut State) -> io::Res
                 },
                 InputMode::Editing if key.kind == KeyEventKind::Press => match key.code {
                     KeyCode::Enter => {
-                        // state.get_chat().push("user", &content);
-                        // let messages = api_client.request(&state.get_chat().get_messages()).await;
-                        // state.get_chat().set_messages(&messages);
-                        input.submit_message()
+                        // update messages and redraw immediately
+                        chat_state.get_chat().push("user", &input_state.input.value);
+                        input_state.input.clear();
+                        terminal.draw(|f| ui(f, chat_state, input_state))?;
+
+                        // make request and update messages again
+                        let message = api_client
+                            .request(chat_state.get_chat().get_messages())
+                            .await;
+
+                        chat_state.get_chat().push("assistant", &message.content);
                     }
                     KeyCode::Char(to_insert) => {
-                        input.enter_char(to_insert);
+                        input_state.input.enter_char(to_insert);
                     }
                     KeyCode::Backspace => {
-                        input.delete_char();
+                        input_state.input.delete_char();
                     }
                     KeyCode::Left => {
-                        input.move_cursor_left();
+                        input_state.input.move_cursor_left();
                     }
                     KeyCode::Right => {
-                        input.move_cursor_right();
+                        input_state.input.move_cursor_right();
                     }
                     KeyCode::Esc => {
-                        input.input_mode = InputMode::Normal;
+                        input_state.input.input_mode = InputMode::Normal;
                     }
                     _ => {}
                 },

@@ -84,8 +84,7 @@ impl Input {
         self.cursor_position = 0;
     }
 
-    pub fn submit_message(&mut self) {
-        self.messages.push(self.value.clone());
+    pub fn clear(&mut self) {
         self.value.clear();
         self.reset_cursor();
     }
