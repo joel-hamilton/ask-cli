@@ -10,4 +10,5 @@ clap = { version = "4.4.0", features = ["derive"]}
 crossterm = "0.27.0"
 inquire = { version = "0.6.2", features = ["editor"] }
 openai-rust = "0.5.1"
+ratatui = "0.23.0"
 tokio = { version = "1", features = ["full"] }
