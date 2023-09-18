@@ -1,3 +1,9 @@
+mod api;
+mod apis;
+mod chat;
+mod traits;
+use crate::traits::api_client::Api;
+
 use crossterm::{
     cursor::{MoveTo, MoveToPreviousLine},
     execute,
@@ -6,15 +12,13 @@ use crossterm::{
     ExecutableCommand,
 };
 use inquire::{error::InquireResult, Editor, Text};
-use openai_rust::{chat, futures_util::StreamExt, Client};
 use std::io::stdout;
 
 #[tokio::main]
 async fn main() -> InquireResult<()> {
-    // TODO get key from config file, if existing, or prompt for key and save in config file
-
-    let client = Client::new(&std::env::var("OPENAI_API_KEY").unwrap());
-    let mut messages: Vec<chat::Message> = Vec::new();
+    let key = std::env::var("OPENAI_API_KEY").unwrap();
+    let api_client = api::ApiClient::new(&key, api::ClientType::OPENAI);
+    let mut chat = chat::Chat::default();
 
     let _ = execute!(
         stdout(),
@@ -53,13 +57,9 @@ async fn main() -> InquireResult<()> {
             continue;
         }
 
-        messages.push(chat::Message {
-            role: "user".to_owned(),
-            content: content,
-        });
-
-        let args = chat::ChatArguments::new("gpt-4", messages.clone());
-        let mut res = client.create_chat_stream(args).await.unwrap();
+        chat.push("user", &content);
+        let messages = api_client.request(&chat.get_messages()).await;
+        chat.set_messages(&messages);
 
         _ = stdout().execute(PrintStyledContent(
             "Response: "
@@ -67,19 +67,6 @@ async fn main() -> InquireResult<()> {
                 .attribute(Attribute::Bold),
         ));
 
-        let mut complete_response: String = "".to_owned();
-        while let Some(events) = res.next().await {
-            for event in events.unwrap() {
-                complete_response += &event.to_string();
-                print!("{}", event)
-            }
-        }
-
-        println!("");
-
-        messages.push(chat::Message {
-            role: "assistant".to_owned(),
-            content: complete_response,
-        });
+        println!("{}", messages[messages.len() - 1].content)
     }
 }
