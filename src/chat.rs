@@ -7,6 +7,7 @@ pub struct Message {
     pub content: String,
 }
 
+#[derive(Clone)]
 pub struct Chat {
     messages: Vec<Message>,
     name: String,
