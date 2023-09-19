@@ -9,10 +9,10 @@ mod ui;
 use crate::input::{Input, InputMode};
 use crate::traits::api_client::Api;
 use crate::ui::ui;
-
 use anyhow::Error;
 use api::ApiClient;
 use chat::Chat;
+use crossterm::event::{KeyEvent, KeyModifiers};
 use crossterm::{
     cursor::{MoveTo, MoveToPreviousLine},
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
@@ -27,6 +27,7 @@ use crossterm::{
 use ratatui::{prelude::*, widgets::*};
 use state::{ChatState, InputState};
 use std::char::CharTryFromError;
+use std::collections::HashMap;
 // use inquire::{error::InquireResult, Editor, Text};
 use std::io::{self, stdout};
 
@@ -38,15 +39,12 @@ async fn main() -> Result<(), Error> {
     let mut input_state = InputState::default();
     // setup terminal
     enable_raw_mode()?;
-    let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-    let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
-
+    let mut terminal = get_terminal().unwrap();
+        
     // create app and run it
     let res = run_app(
         &mut api_client,
-        &mut terminal,
+        // &mut terminal,
         &mut chat_state,
         &mut input_state,
     )
@@ -68,12 +66,21 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-async fn run_app<B: Backend, A: Api + 'static>(
+fn get_terminal() -> Result<Terminal<CrosstermBackend<io::Stdout>>, Error> {
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
+    let terminal: Terminal<CrosstermBackend<io::Stdout>> = Terminal::new(backend)?;
+    Ok(terminal)
+}
+
+async fn run_app<A: Api + 'static>(
     api_client: &mut A,
-    terminal: &mut Terminal<B>,
     chat_state: &mut ChatState,
     input_state: &mut InputState,
 ) -> io::Result<()> {
+    // we will need to re-create term after returning from spawned editor process
+    let mut terminal = get_terminal().unwrap();
     loop {
         terminal.draw(|f| ui(f, chat_state, input_state))?;
 
@@ -88,33 +95,63 @@ async fn run_app<B: Backend, A: Api + 'static>(
                     }
                     _ => {}
                 },
-                InputMode::Editing if key.kind == KeyEventKind::Press => match key.code {
-                    KeyCode::Enter => {
+                InputMode::Editing if key.kind == KeyEventKind::Press => match key {
+                    KeyEvent {
+                        code: KeyCode::Char('e'),
+                        modifiers: KeyModifiers::CONTROL,
+                        ..
+                    } => {
+                        let template = "Fill in the blank: Hello, _____!";
+                        let edited = edit::edit(template)?;
+                        // println!("after editing: '{}'", edited);
+                        let mut stdout = io::stdout();
+                        execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+                        terminal = get_terminal().unwrap();
+                        terminal.draw(|f| ui(f, chat_state, input_state))?;
+                    }
+                    KeyEvent {
+                        code: KeyCode::Enter,
+                        ..
+                    } => {
                         // update messages and redraw immediately
                         chat_state.get_chat().push("user", &input_state.input.value);
                         input_state.input.clear();
                         terminal.draw(|f| ui(f, chat_state, input_state))?;
 
                         // make request and update messages again
-                        let message = api_client
-                            .request(chat_state.get_chat().get_messages())
-                            .await;
-
-                        chat_state.get_chat().push("assistant", &message.content);
+                        // let message = api_client
+                        //     .request(chat_state.get_chat().get_messages())
+                        //     .await;
+                        // chat_state.get_chat().push("assistant", &message.content);
+                        chat_state.get_chat().push("assistant", "testing");
                     }
-                    KeyCode::Char(to_insert) => {
+                    KeyEvent {
+                        code: KeyCode::Char(to_insert),
+                        ..
+                    } => {
                         input_state.input.enter_char(to_insert);
                     }
-                    KeyCode::Backspace => {
+                    KeyEvent {
+                        code: KeyCode::Backspace,
+                        ..
+                    } => {
                         input_state.input.delete_char();
                     }
-                    KeyCode::Left => {
+                    KeyEvent {
+                        code: KeyCode::Left,
+                        ..
+                    } => {
                         input_state.input.move_cursor_left();
                     }
-                    KeyCode::Right => {
+                    KeyEvent {
+                        code: KeyCode::Right,
+                        ..
+                    } => {
                         input_state.input.move_cursor_right();
                     }
-                    KeyCode::Esc => {
+                    KeyEvent {
+                        code: KeyCode::Esc, ..
+                    } => {
                         input_state.input.input_mode = InputMode::Normal;
                     }
                     _ => {}
