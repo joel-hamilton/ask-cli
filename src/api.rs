@@ -3,18 +3,18 @@ use crate::traits::api_client::Api;
 use crate::chat;
 
 use crossterm::cursor::RestorePosition;
-use openai_rust::{
-    chat::{self as openai_chat, stream::ChatResponseEvent},
-    futures_util::{Stream, StreamExt},
-    Client,
-};
+// use openai_rust::{
+//     chat::{self as openai_chat, stream::ChatResponseEvent},
+//     futures_util::{Stream, StreamExt},
+//     Client,
+// };
 
 pub enum ClientType {
     OPENAI,
 }
 
 pub struct ApiClient {
-    client: Client,
+    client: Box<dyn Api>,
 }
 
 impl ApiClient {
