@@ -1,4 +1,4 @@
-use crate::input::{Input, InputMode};
+use crate::input::{InputMode};
 use crate::state::{ChatState, InputState};
 use ratatui::{prelude::*, widgets::*};
 

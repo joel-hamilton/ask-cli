@@ -1,4 +1,4 @@
-use crate::chat::{self, Message};
+use crate::chat::{Message};
 use crate::traits::api_client::Api;
 use async_trait::async_trait;
 use openai_rust::{chat as openai_chat, futures_util::StreamExt, Client};
@@ -39,7 +39,7 @@ impl Api for OpenaiClient {
 impl OpenaiClient {
     pub fn new(api_key: &str) -> OpenaiClient {
         let client = Client::new(api_key);
-        return OpenaiClient { client };
+        OpenaiClient { client }
     }
 
     fn chat_messages_to_openai_messages(

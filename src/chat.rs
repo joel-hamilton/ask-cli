@@ -1,4 +1,4 @@
-use openai_rust::{chat, futures_util::StreamExt, Client};
+
 
 const BASE_NAME: &str = "Untitled Chat";
 #[derive(Clone, Debug)]

@@ -7,37 +7,27 @@ mod state;
 mod traits;
 mod ui;
 
-use crate::input::{Input, InputMode};
-use crate::traits::api_client::Api;
-use crate::ui::ui;
 use anyhow::Error;
+
 use api::ApiClient;
 use app::App;
-use chat::Chat;
-use crossterm::event::{KeyEvent, KeyModifiers};
+
 use crossterm::{
-    cursor::{MoveTo, MoveToPreviousLine},
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
+    event::{DisableMouseCapture, EnableMouseCapture},
     execute,
     // style::{Attribute, Color, PrintStyledContent, Stylize},
-    terminal::{
-        disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
-        LeaveAlternateScreen,
-    },
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use ratatui::{prelude::*, widgets::*};
 use state::{ChatState, InputState};
-// use inquire::{error::InquireResult, Editor, Text};
-use std::io::{self, stdout};
+use std::io::{self};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let key = std::env::var("OPENAI_API_KEY").unwrap();
-    let mut api_client: apis::openai::OpenaiClient =
-        api::ApiClient::new(&key, api::ClientType::OPENAI);
-    let mut chat_state = ChatState::default();
-    let mut input_state = InputState::default();
-    let mut app = App::new(Box::new(api_client), chat_state, input_state);
+    let api_client = ApiClient::new(&key, api::ClientType::OPENAI);
+    let chat_state = ChatState::default();
+    let input_state = InputState::default();
+    let mut app = App::new(api_client, chat_state, input_state);
 
     // setup terminal
     enable_raw_mode()?;
