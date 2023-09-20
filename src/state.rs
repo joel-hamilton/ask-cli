@@ -1,5 +1,13 @@
 use crate::{chat::Chat, input::Input};
 
+enum Windows {
+  INPUT,
+  HISTORY
+}
+pub struct WindowState {
+  focused_window: Windows
+}
+
 pub struct InputState {
     pub input: Input,
 }
