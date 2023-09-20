@@ -2,7 +2,7 @@ use crate::input::InputMode;
 use crate::ui::ui;
 use crate::{
     state::{ChatState, InputState},
-    traits::api_client::Api,
+    traits::api_client::ApiRequest,
 };
 use anyhow::Error;
 use crossterm::event::{KeyEvent, KeyModifiers};
@@ -17,13 +17,13 @@ use ratatui::prelude::*;
 // use inquire::{error::InquireResult, Editor, Text};
 use std::io::{self};
 pub struct App {
-    api_client: Box<dyn Api>,
+    api_client: Box<dyn ApiRequest>,
     chat_state: ChatState,
     input_state: InputState,
 }
 
 impl App {
-    pub fn new(api_client: Box<dyn Api>, chat_state: ChatState, input_state: InputState) -> Self {
+    pub fn new(api_client: Box<dyn ApiRequest>, chat_state: ChatState, input_state: InputState) -> Self {
         App {
             api_client,
             chat_state,

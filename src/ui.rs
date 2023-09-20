@@ -22,8 +22,10 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, chat_state: &mut ChatState, input_state:
                     "Press ".into(),
                     "q".bold(),
                     " to exit, ".into(),
+                    "i".bold(),
+                    " to edit, ".into(),
                     "e".bold(),
-                    " to start editing.".bold(),
+                    " to launch editor.".into()
                 ],
                 Style::default().add_modifier(Modifier::RAPID_BLINK),
             ),
@@ -31,9 +33,9 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, chat_state: &mut ChatState, input_state:
                 vec![
                     "Press ".into(),
                     "Esc".bold(),
-                    " to stop editing, ".into(),
+                    " to exit edit mode, ".into(),
                     "Enter".bold(),
-                    " to record the message".into(),
+                    " send prompt".into(),
                 ],
                 Style::default(),
             ),

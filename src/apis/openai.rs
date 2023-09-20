@@ -1,5 +1,5 @@
-use crate::chat::{Message};
-use crate::traits::api_client::Api;
+use crate::{chat::Message, traits::api_client::ApiCreation};
+use crate::traits::api_client::ApiRequest;
 use async_trait::async_trait;
 use openai_rust::{chat as openai_chat, futures_util::StreamExt, Client};
 
@@ -8,11 +8,11 @@ pub struct OpenaiClient {
 }
 
 #[async_trait]
-impl Api for OpenaiClient {
+impl ApiRequest for OpenaiClient {
     async fn request(&self, messages: &Vec<Message>) -> Message {
         let mut messages = messages.clone();
         let chat_args = openai_chat::ChatArguments::new(
-            "gpt-4",
+            "gpt-3.5-turbo",
             self.chat_messages_to_openai_messages(&messages),
         );
 
@@ -36,12 +36,13 @@ impl Api for OpenaiClient {
     }
 }
 
-impl OpenaiClient {
-    pub fn new(api_key: &str) -> OpenaiClient {
+impl ApiCreation for OpenaiClient {
+    fn new(api_key: &str) -> OpenaiClient {
         let client = Client::new(api_key);
         OpenaiClient { client }
     }
-
+}
+impl OpenaiClient {
     fn chat_messages_to_openai_messages(
         &self,
         messages: &Vec<Message>,

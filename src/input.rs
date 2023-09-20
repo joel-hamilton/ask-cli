@@ -30,7 +30,7 @@ impl Default for Input {
     fn default() -> Input {
         Input {
             value: String::new(),
-            input_mode: InputMode::Normal,
+            input_mode: InputMode::Editing,
             messages: Vec::new(),
             cursor_position: 0,
         }
