@@ -1,45 +1,32 @@
-use crate::{chat::Chat, input::Input};
+use crate::{chat::Chat, textarea::Textarea};
 
-pub enum InputMode {
+pub enum AppMode {
     Normal,
     Editing,
 }
 
-pub struct InputModeState {
-    pub input_mode: InputMode,
+pub struct AppModeState {
+    pub app_mode: AppMode,
 }
 
-impl InputModeState {
+impl AppModeState {
     pub fn default() -> Self {
-        InputModeState {
-            input_mode: InputMode::Editing,
+        AppModeState {
+            app_mode: AppMode::Editing,
         }
     }
 }
 
-enum Windows {
-    INPUT,
-    HISTORY,
+pub struct TextareaState {
+    pub textarea: Textarea,
 }
 
-pub struct WindowState {
-    focused_window: Windows,
-}
-
-pub struct InputState {
-    pub input: Input,
-}
-
-impl InputState {
-    pub fn default() -> InputState {
-        InputState {
-            input: Input::default(),
+impl TextareaState {
+    pub fn default() -> TextareaState {
+        TextareaState {
+            textarea: Textarea::default(),
         }
     }
-
-    // pub fn get_input(&mut self) -> &mut Input {
-    //   &mut self.input
-    // }
 }
 
 pub struct ChatState {
@@ -55,7 +42,7 @@ impl ChatState {
         }
     }
 
-    pub fn get_chat(&mut self) -> &mut Chat {
+    pub fn get_current_chat(&mut self) -> &mut Chat {
         &mut self.chat_history[self.current_chat_index]
     }
 }

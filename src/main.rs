@@ -2,7 +2,7 @@ mod api;
 mod apis;
 mod app;
 mod chat;
-mod input;
+mod textarea;
 mod state;
 mod traits;
 mod ui;
@@ -18,7 +18,7 @@ use crossterm::{
     // style::{Attribute, Color, PrintStyledContent, Stylize},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use state::{ChatState, InputState, InputModeState};
+use state::{ChatState, TextareaState, AppModeState};
 use std::io::{self};
 
 #[tokio::main]
@@ -26,9 +26,9 @@ async fn main() -> Result<(), Error> {
     let key = std::env::var("OPENAI_API_KEY").unwrap();
     let api_client = ApiClient::new(&key, api::ClientType::OPENAI);
     let chat_state = ChatState::default();
-    let input_state = InputState::default();
-    let input_mode_state = InputModeState::default();
-    let mut app = App::new(api_client, chat_state, input_state, input_mode_state);
+    let textarea_state = TextareaState::default();
+    let app_mode_state = AppModeState::default();
+    let mut app = App::new(api_client, chat_state, textarea_state, app_mode_state);
 
     // setup terminal
     enable_raw_mode()?;
@@ -39,7 +39,7 @@ async fn main() -> Result<(), Error> {
 
     let mut terminal = app.get_terminal().unwrap();
     // create app and run it
-    // let res = run_app(&mut api_client, &mut chat_state, &mut input_state).await;
+    // let res = run_app(&mut api_client, &mut chat_state, &mut textarea_state).await;
 
     // restore terminal
     disable_raw_mode()?;

@@ -1,7 +1,7 @@
-use crate::state::InputMode;
+use crate::state::AppMode;
 use crate::ui::ui;
 use crate::{
-    state::{ChatState, InputModeState, InputState},
+    state::{ChatState, AppModeState, TextareaState},
     traits::api_client::ApiRequest,
 };
 use anyhow::Error;
@@ -19,22 +19,22 @@ use std::io::{self};
 pub struct App {
     api_client: Box<dyn ApiRequest>,
     chat_state: ChatState,
-    input_state: InputState,
-    input_mode_state: InputModeState,
+    textarea_state: TextareaState,
+    app_mode_state: AppModeState,
 }
 
 impl App {
     pub fn new(
         api_client: Box<dyn ApiRequest>,
         chat_state: ChatState,
-        input_state: InputState,
-        input_mode_state: InputModeState,
+        textarea_state: TextareaState,
+        app_mode_state: AppModeState,
     ) -> Self {
         App {
             api_client,
             chat_state,
-            input_state,
-            input_mode_state,
+            textarea_state,
+            app_mode_state,
         }
     }
 
@@ -50,98 +50,98 @@ impl App {
         // we will need to re-create term after returning from spawned editor process
         let mut terminal = self.get_terminal().unwrap();
         loop {
-            terminal.draw(|f| ui(f, &mut self.chat_state, &self.input_state, &self.input_mode_state))?;
+            terminal.draw(|f| ui(f, &mut self.chat_state, &self.textarea_state, &self.app_mode_state))?;
 
             if let Event::Key(key) = event::read()? {
-                match self.input_mode_state.input_mode {
-                    InputMode::Normal => match key.code {
+                match self.app_mode_state.app_mode {
+                    AppMode::Normal => match key.code {
                         KeyCode::Char('e') => {
-                            let user_input = edit::edit(&self.input_state.input.value)?;
+                            let user_input = edit::edit(&self.textarea_state.textarea.value)?;
 
                             // restore our app's ui
                             let mut stdout = io::stdout();
                             execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
                             terminal = self.get_terminal().unwrap();
                             terminal
-                                .draw(|f| ui(f, &mut self.chat_state, &self.input_state, &self.input_mode_state))?;
+                                .draw(|f| ui(f, &mut self.chat_state, &self.textarea_state, &self.app_mode_state))?;
 
                             // update user message
-                            self.chat_state.get_chat().push("user", &user_input);
-                            self.input_state.input.clear();
+                            self.chat_state.get_current_chat().push("user", &user_input);
+                            self.textarea_state.textarea.clear();
                             terminal
-                                .draw(|f| ui(f, &mut self.chat_state, &self.input_state, &self.input_mode_state))?;
+                                .draw(|f| ui(f, &mut self.chat_state, &self.textarea_state, &self.app_mode_state))?;
 
                             // make request and update messages again
                             let message = self
                                 .api_client
-                                .request(self.chat_state.get_chat().get_messages())
+                                .request(self.chat_state.get_current_chat().get_messages())
                                 .await;
                             self.chat_state
-                                .get_chat()
+                                .get_current_chat()
                                 .push("assistant", &message.content);
                             terminal
-                                .draw(|f| ui(f, &mut self.chat_state, &self.input_state, &self.input_mode_state))?;
+                                .draw(|f| ui(f, &mut self.chat_state, &self.textarea_state, &self.app_mode_state))?;
                         }
                         KeyCode::Char('i') => {
-                            self.input_mode_state.input_mode = InputMode::Editing;
+                            self.app_mode_state.app_mode = AppMode::Editing;
                         }
                         KeyCode::Char('q') => {
                             return Ok(());
                         }
                         _ => {}
                     },
-                    InputMode::Editing if key.kind == KeyEventKind::Press => match key {
+                    AppMode::Editing if key.kind == KeyEventKind::Press => match key {
                         KeyEvent {
                             code: KeyCode::Enter,
                             ..
                         } => {
                             // update messages and redraw immediately
                             self.chat_state
-                                .get_chat()
-                                .push("user", &self.input_state.input.value);
-                            self.input_state.input.clear();
+                                .get_current_chat()
+                                .push("user", &self.textarea_state.textarea.value);
+                            self.textarea_state.textarea.clear();
                             terminal
-                                .draw(|f| ui(f, &mut self.chat_state, &self.input_state, &self.input_mode_state))?;
+                                .draw(|f| ui(f, &mut self.chat_state, &self.textarea_state, &self.app_mode_state))?;
 
                             // make request and update messages again
                             // let message = self
                             //     .api_client
-                            //     .request(self.chat_state.get_chat().get_messages())
+                            //     .request(self.chat_state.get_current_chat().get_messages())
                             //     .await;
                             // self.chat_state
-                            //     .get_chat()
+                            //     .get_current_chat()
                             //     .push("assistant", &message.content);
 
-                            self.chat_state.get_chat().push("assistant", "temp");
+                            self.chat_state.get_current_chat().push("assistant", "temp");
                         }
                         KeyEvent {
                             code: KeyCode::Char(to_insert),
                             ..
                         } => {
-                            self.input_state.input.enter_char(to_insert);
+                            self.textarea_state.textarea.enter_char(to_insert);
                         }
                         KeyEvent {
                             code: KeyCode::Backspace,
                             ..
                         } => {
-                            self.input_state.input.delete_char();
+                            self.textarea_state.textarea.delete_char();
                         }
                         KeyEvent {
                             code: KeyCode::Left,
                             ..
                         } => {
-                            self.input_state.input.move_cursor_left();
+                            self.textarea_state.textarea.move_cursor_left();
                         }
                         KeyEvent {
                             code: KeyCode::Right,
                             ..
                         } => {
-                            self.input_state.input.move_cursor_right();
+                            self.textarea_state.textarea.move_cursor_right();
                         }
                         KeyEvent {
                             code: KeyCode::Esc, ..
                         } => {
-                            self.input_mode_state.input_mode = InputMode::Normal;
+                            self.app_mode_state.app_mode = AppMode::Normal;
                         }
                         _ => {}
                     },

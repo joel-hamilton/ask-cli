@@ -1,32 +1,32 @@
 // #[derive(Clone)]
 
 
-pub struct Input {
-    /// Current value of the input box
+pub struct Textarea {
+    /// Current value of the textarea
     pub value: String,
     /// Position of cursor in the editor area.
     pub cursor_position: usize,
 }
 
-impl Clone for Input {
+impl Clone for Textarea {
     fn clone(&self) -> Self {
-        Input {
+        Textarea {
             value: self.value.clone(),
             cursor_position: self.cursor_position,
         }
     }
 }
 
-impl Default for Input {
-    fn default() -> Input {
-        Input {
+impl Default for Textarea {
+    fn default() -> Textarea {
+        Textarea {
             value: String::new(),
             cursor_position: 0,
         }
     }
 }
 
-impl Input {
+impl Textarea {
     pub fn move_cursor_left(&mut self) {
         let cursor_moved_left = self.cursor_position.saturating_sub(1);
         self.cursor_position = self.clamp_cursor(cursor_moved_left);
