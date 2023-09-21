@@ -1,11 +1,29 @@
 use crate::{chat::Chat, input::Input};
 
-enum Windows {
-  INPUT,
-  HISTORY
+pub enum InputMode {
+    Normal,
+    Editing,
 }
+
+pub struct InputModeState {
+    pub input_mode: InputMode,
+}
+
+impl InputModeState {
+    pub fn default() -> Self {
+        InputModeState {
+            input_mode: InputMode::Editing,
+        }
+    }
+}
+
+enum Windows {
+    INPUT,
+    HISTORY,
+}
+
 pub struct WindowState {
-  focused_window: Windows
+    focused_window: Windows,
 }
 
 pub struct InputState {

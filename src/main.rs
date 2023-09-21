@@ -18,7 +18,7 @@ use crossterm::{
     // style::{Attribute, Color, PrintStyledContent, Stylize},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use state::{ChatState, InputState};
+use state::{ChatState, InputState, InputModeState};
 use std::io::{self};
 
 #[tokio::main]
@@ -27,7 +27,8 @@ async fn main() -> Result<(), Error> {
     let api_client = ApiClient::new(&key, api::ClientType::OPENAI);
     let chat_state = ChatState::default();
     let input_state = InputState::default();
-    let mut app = App::new(api_client, chat_state, input_state);
+    let input_mode_state = InputModeState::default();
+    let mut app = App::new(api_client, chat_state, input_state, input_mode_state);
 
     // setup terminal
     enable_raw_mode()?;

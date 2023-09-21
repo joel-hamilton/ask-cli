@@ -1,8 +1,7 @@
-use crate::input::InputMode;
-use crate::state::{ChatState, InputState};
+use crate::state::{ChatState, InputState, InputModeState, InputMode};
 use ratatui::{prelude::*, widgets::*};
 
-pub fn ui<B: Backend>(f: &mut Frame<B>, chat_state: &mut ChatState, input_state: &mut InputState) {
+pub fn ui<B: Backend>(f: &mut Frame<B>, chat_state: &mut ChatState, input_state: &InputState, input_mode_state: &InputModeState) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints(
@@ -15,7 +14,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, chat_state: &mut ChatState, input_state:
         )
         .split(f.size());
 
-    let (msg, style) = match input_state.input.input_mode {
+    let (msg, style) = match input_mode_state.input_mode {
         InputMode::Normal => (
             vec![
                 "Press ".into(),
@@ -45,14 +44,14 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, chat_state: &mut ChatState, input_state:
     f.render_widget(help_message, chunks[0]);
 
     let paragraph = Paragraph::new(input_state.input.value.as_str())
-        .style(match input_state.input.input_mode {
+        .style(match input_mode_state.input_mode {
             InputMode::Normal => Style::default(),
             InputMode::Editing => Style::default().fg(Color::Yellow),
         })
         .block(Block::default().borders(Borders::ALL).title("Input"));
     f.render_widget(paragraph, chunks[2]);
 
-    match input_state.input.input_mode {
+    match input_mode_state.input_mode {
         InputMode::Normal =>
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
             {}

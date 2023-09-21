@@ -1,18 +1,11 @@
-#[derive(Clone)]
-pub enum InputMode {
-    Normal,
-    Editing,
-}
+// #[derive(Clone)]
+
 
 pub struct Input {
     /// Current value of the input box
     pub value: String,
     /// Position of cursor in the editor area.
     pub cursor_position: usize,
-    /// Current input mode
-    pub input_mode: InputMode,
-    /// History of recorded messages
-    pub messages: Vec<String>,
 }
 
 impl Clone for Input {
@@ -20,8 +13,6 @@ impl Clone for Input {
         Input {
             value: self.value.clone(),
             cursor_position: self.cursor_position,
-            input_mode: self.input_mode.clone(),
-            messages: self.messages.clone(),
         }
     }
 }
@@ -30,8 +21,6 @@ impl Default for Input {
     fn default() -> Input {
         Input {
             value: String::new(),
-            input_mode: InputMode::Editing,
-            messages: Vec::new(),
             cursor_position: 0,
         }
     }
