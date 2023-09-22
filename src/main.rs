@@ -2,10 +2,12 @@ mod api;
 mod apis;
 mod app;
 mod chat;
+mod handlers;
 mod textarea;
 mod state;
 mod traits;
 mod ui;
+mod utils;
 
 use anyhow::Error;
 
@@ -37,7 +39,7 @@ async fn main() -> Result<(), Error> {
 
     let res = app.run().await;
 
-    let mut terminal = app.get_terminal().unwrap();
+    let mut terminal = utils::get_terminal().unwrap();
     // create app and run it
     // let res = run_app(&mut api_client, &mut chat_state, &mut textarea_state).await;
 
