@@ -5,7 +5,7 @@ use crate::traits::api_client::ApiRequest;
 use crate::{chat::Message, traits::api_client::ApiCreation};
 use anyhow::Error;
 use async_trait::async_trait;
-use openai_rust::futures_util::stream::BoxStream;
+use futures::stream::BoxStream;
 use openai_rust::{chat as openai_chat, futures_util::StreamExt, Client};
 
 pub struct OpenaiClient {

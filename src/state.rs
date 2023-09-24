@@ -1,4 +1,4 @@
-use crate::{chat::Chat};
+use crate::chat::Chat;
 
 pub enum AppMode {
     Normal,

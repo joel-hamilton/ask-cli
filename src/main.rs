@@ -19,10 +19,10 @@ use crossterm::{
         Clear, ClearType,
     },
 };
-use inquire::{Text};
-use openai_rust::futures_util::StreamExt;
+use futures::StreamExt;
+use inquire::Text;
 use state::{AppModeState, ChatState};
-use std::io::{stdout};
+use std::io::stdout;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
