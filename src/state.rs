@@ -1,4 +1,4 @@
-use crate::{chat::Chat, textarea::Textarea};
+use crate::{chat::Chat};
 
 pub enum AppMode {
     Normal,
@@ -17,17 +17,6 @@ impl AppModeState {
     }
 }
 
-pub struct TextareaState {
-    pub textarea: Textarea,
-}
-
-impl TextareaState {
-    pub fn default() -> TextareaState {
-        TextareaState {
-            textarea: Textarea::default(),
-        }
-    }
-}
 
 pub struct ChatState {
     chat_history: Vec<Chat>,

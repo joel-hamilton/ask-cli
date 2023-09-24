@@ -1,10 +1,9 @@
-use crate::state::{AppMode, AppModeState, ChatState, TextareaState};
+use crate::state::{AppMode, AppModeState, ChatState};
 use ratatui::{prelude::*, widgets::*};
 
 pub fn ui<B: Backend>(
     f: &mut Frame<B>,
     chat_state: &mut ChatState,
-    textarea_state: &TextareaState,
     app_mode_state: &AppModeState,
 ) {
     let chunks = Layout::default()
@@ -48,7 +47,7 @@ pub fn ui<B: Backend>(
     let help_message = Paragraph::new(text);
     f.render_widget(help_message, chunks[0]);
 
-    let paragraph = Paragraph::new(textarea_state.textarea.value.as_str())
+    let paragraph = Paragraph::new("testing")
         .style(match app_mode_state.app_mode {
             AppMode::Normal => Style::default(),
             AppMode::Editing => Style::default().fg(Color::Yellow),
@@ -62,15 +61,7 @@ pub fn ui<B: Backend>(
             {}
 
         AppMode::Editing => {
-            // Make the cursor visible and ask ratatui to put it at the specified coordinates after
-            // rendering
-            f.set_cursor(
-                // Draw the cursor at the current position in the textarea
-                // This position is can be controlled via the left and right arrow key
-                chunks[2].x + textarea_state.textarea.cursor_position as u16 + 1,
-                // Move one line down, from the border to the input line
-                chunks[2].y + 1,
-            )
+//
         }
     }
 

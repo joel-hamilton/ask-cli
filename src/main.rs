@@ -3,7 +3,6 @@ mod apis;
 mod app;
 mod chat;
 mod state;
-mod textarea;
 mod traits;
 mod ui;
 
@@ -14,14 +13,18 @@ use app::App;
 
 use chat::Message;
 use crossterm::{
+    cursor::MoveToPreviousLine,
     event::{DisableMouseCapture, EnableMouseCapture},
     execute,
     style::{Attribute, Color, PrintStyledContent, Stylize},
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{
+        disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
+        LeaveAlternateScreen,
+    },
 };
 use inquire::{error::InquireResult, Editor, Text};
 use openai_rust::futures_util::StreamExt;
-use state::{AppModeState, ChatState, TextareaState};
+use state::{AppModeState, ChatState};
 use std::io::{self, stdout};
 
 #[tokio::main]
@@ -29,21 +32,23 @@ async fn main() -> Result<(), Error> {
     let key = std::env::var("OPENAI_API_KEY").unwrap();
     let api_client = ApiClient::new(&key, api::ClientType::OPENAI);
     let chat_state = ChatState::default();
-    let textarea_state = TextareaState::default();
     let app_mode_state = AppModeState::default();
-    let mut app = App::new(api_client, chat_state, textarea_state, app_mode_state);
+    let mut app = App::new(api_client, chat_state, app_mode_state);
 
     loop {
-        // query cli input/system editor buffer (TODO or stdin)
         let mut content = Text::new("Prompt:").prompt()?;
         if content == "" {
             content = edit::edit("")?;
+            _ = execute!(
+                stdout(),
+                MoveToPreviousLine(1),
+                Clear(ClearType::CurrentLine)
+            );
+
+            print!("Prompt: {}", content);
         }
 
         app.chat_state.get_current_chat().push("user", &content);
-        // app.api_client
-        //     .request(app.chat_state.get_current_chat().get_messages());
-
         let mut complete_response: String = "".to_owned();
         match app
             .api_client
@@ -62,7 +67,6 @@ async fn main() -> Result<(), Error> {
                 }
             }
             Err(e) => {
-                // Handle error when calling the async function
                 println!("Error: {}", e);
             }
         }
