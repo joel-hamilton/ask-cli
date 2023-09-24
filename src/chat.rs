@@ -34,8 +34,8 @@ impl Chat {
         });
     }
 
-    pub fn get_messages(&mut self) -> &Vec<Message> {
-        &self.messages
+    pub fn get_messages(&mut self) -> &mut Vec<Message> {
+        &mut self.messages
     }
 
     pub fn set_messages(&mut self, messages: &Vec<Message>) {

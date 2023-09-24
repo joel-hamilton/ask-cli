@@ -17,8 +17,8 @@ use ratatui::prelude::*;
 // use inquire::{error::InquireResult, Editor, Text};
 use std::io::{self};
 pub struct App {
-    api_client: Box<dyn ApiRequest>,
-    chat_state: ChatState,
+    pub api_client: Box<dyn ApiRequest>,
+    pub chat_state: ChatState,
     textarea_state: TextareaState,
     app_mode_state: AppModeState,
 }
@@ -76,11 +76,11 @@ impl App {
                                 .api_client
                                 .request(self.chat_state.get_current_chat().get_messages())
                                 .await;
-                            self.chat_state
-                                .get_current_chat()
-                                .push("assistant", &message.content);
-                            terminal
-                                .draw(|f| ui(f, &mut self.chat_state, &self.textarea_state, &self.app_mode_state))?;
+                            // self.chat_state
+                            //     .get_current_chat()
+                            //     .push("assistant", &message.content);
+                            // terminal
+                            //     .draw(|f| ui(f, &mut self.chat_state, &self.textarea_state, &self.app_mode_state))?;
                         }
                         KeyCode::Char('i') => {
                             self.app_mode_state.app_mode = AppMode::Editing;

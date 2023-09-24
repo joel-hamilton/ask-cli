@@ -2,8 +2,8 @@ mod api;
 mod apis;
 mod app;
 mod chat;
-mod textarea;
 mod state;
+mod textarea;
 mod traits;
 mod ui;
 
@@ -12,14 +12,17 @@ use anyhow::Error;
 use api::ApiClient;
 use app::App;
 
+use chat::Message;
 use crossterm::{
     event::{DisableMouseCapture, EnableMouseCapture},
     execute,
-    // style::{Attribute, Color, PrintStyledContent, Stylize},
+    style::{Attribute, Color, PrintStyledContent, Stylize},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use state::{ChatState, TextareaState, AppModeState};
-use std::io::{self};
+use inquire::{error::InquireResult, Editor, Text};
+use openai_rust::futures_util::StreamExt;
+use state::{AppModeState, ChatState, TextareaState};
+use std::io::{self, stdout};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -30,29 +33,74 @@ async fn main() -> Result<(), Error> {
     let app_mode_state = AppModeState::default();
     let mut app = App::new(api_client, chat_state, textarea_state, app_mode_state);
 
-    // setup terminal
-    enable_raw_mode()?;
-    let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    loop {
+        // query cli input/system editor buffer (TODO or stdin)
+        let mut content = Text::new("Prompt:").prompt()?;
+        if content == "" {
+            content = edit::edit("")?;
+        }
 
-    let res = app.run().await;
+        app.chat_state.get_current_chat().push("user", &content);
+        // app.api_client
+        //     .request(app.chat_state.get_current_chat().get_messages());
 
-    let mut terminal = app.get_terminal().unwrap();
-    // create app and run it
-    // let res = run_app(&mut api_client, &mut chat_state, &mut textarea_state).await;
+        let mut complete_response: String = "".to_owned();
+        match app
+            .api_client
+            .create_chat_stream(app.chat_state.get_current_chat().get_messages())
+            .await
+        {
+            Ok(mut stream) => {
+                while let Some(item) = stream.next().await {
+                    match item {
+                        Ok(message) => {
+                            complete_response += &message;
+                            print!("{}", message);
+                        }
+                        Err(_e) => {}
+                    }
+                }
+            }
+            Err(e) => {
+                // Handle error when calling the async function
+                println!("Error: {}", e);
+            }
+        }
 
-    // restore terminal
-    disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
-    terminal.show_cursor()?;
+        println!("");
 
-    if let Err(err) = res {
-        println!("{err:?}");
+        app.chat_state
+            .get_current_chat()
+            .get_messages()
+            .push(chat::Message {
+                role: "assistant".to_owned(),
+                content: complete_response,
+            });
     }
+
+    // // setup terminal
+    // enable_raw_mode()?;
+    // let mut stdout = io::stdout();
+    // execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+
+    // let res = app.run().await;
+
+    // let mut terminal = app.get_terminal().unwrap();
+    // // create app and run it
+    // // let res = run_app(&mut api_client, &mut chat_state, &mut textarea_state).await;
+
+    // // restore terminal
+    // disable_raw_mode()?;
+    // execute!(
+    //     terminal.backend_mut(),
+    //     LeaveAlternateScreen,
+    //     DisableMouseCapture
+    // )?;
+    // terminal.show_cursor()?;
+
+    // if let Err(err) = res {
+    //     println!("{err:?}");
+    // }
 
     Ok(())
 }

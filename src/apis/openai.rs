@@ -1,6 +1,11 @@
-use crate::{chat::Message, traits::api_client::ApiCreation};
+use std::convert::Infallible;
+
+use crate::chat;
 use crate::traits::api_client::ApiRequest;
+use crate::{chat::Message, traits::api_client::ApiCreation};
+use anyhow::Error;
 use async_trait::async_trait;
+use openai_rust::futures_util::stream::BoxStream;
 use openai_rust::{chat as openai_chat, futures_util::StreamExt, Client};
 
 pub struct OpenaiClient {
@@ -9,7 +14,7 @@ pub struct OpenaiClient {
 
 #[async_trait]
 impl ApiRequest for OpenaiClient {
-    async fn request(&self, messages: &Vec<Message>) -> Message {
+    async fn request(&self, messages: &Vec<Message>) {
         let mut messages = messages.clone();
         let chat_args = openai_chat::ChatArguments::new(
             "gpt-3.5-turbo",
@@ -17,22 +22,43 @@ impl ApiRequest for OpenaiClient {
         );
 
         let mut res = self.client.create_chat_stream(chat_args).await.unwrap();
-        let mut assistant_message = String::from("");
-        // let mut complete_response: String = "".to_owned();
+        let mut assistant_message: String = String::new();
+
         while let Some(events) = res.next().await {
             for event in events.unwrap() {
                 assistant_message += &event.to_string();
             }
         }
+    }
 
-        let message = Message {
-            role: String::from("assistant"),
-            content: assistant_message,
-        };
-        let return_message = message.clone();
-        messages.push(message);
+    async fn create_chat_stream(
+        &self,
+        messages: &Vec<chat::Message>,
+    ) -> Result<BoxStream<Result<String, Error>>, Error> {
+        let chat_args = openai_chat::ChatArguments::new(
+            "gpt-3.5-turbo",
+            self.chat_messages_to_openai_messages(&messages),
+        );
+        match self.client.create_chat_stream(chat_args).await {
+            Ok(s) => {
+                let transformed = s.map(|item| {
+                    match item {
+                        Ok(events) => {
+                            let transformed_events = events
+                                .into_iter()
+                                .map(|event| event.to_string())
+                                .collect::<Vec<_>>();
 
-        return_message
+                            Ok(transformed_events.join(""))
+                        }
+                        Err(e) => Err(e), // Change error type if required
+                    }
+                });
+
+                Ok(Box::pin(transformed))
+            }
+            Err(e) => Err(e),
+        }
     }
 }
 
