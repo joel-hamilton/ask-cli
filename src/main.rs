@@ -81,30 +81,4 @@ async fn main() -> Result<(), Error> {
                 content: complete_response,
             });
     }
-
-    // // setup terminal
-    // enable_raw_mode()?;
-    // let mut stdout = io::stdout();
-    // execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-
-    // let res = app.run().await;
-
-    // let mut terminal = app.get_terminal().unwrap();
-    // // create app and run it
-    // // let res = run_app(&mut api_client, &mut chat_state, &mut textarea_state).await;
-
-    // // restore terminal
-    // disable_raw_mode()?;
-    // execute!(
-    //     terminal.backend_mut(),
-    //     LeaveAlternateScreen,
-    //     DisableMouseCapture
-    // )?;
-    // terminal.show_cursor()?;
-
-    // if let Err(err) = res {
-    //     println!("{err:?}");
-    // }
-
-    Ok(())
 }
