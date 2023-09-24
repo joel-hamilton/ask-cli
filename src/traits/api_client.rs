@@ -1,7 +1,7 @@
 use crate::chat;
 use anyhow::Error;
 use async_trait::async_trait;
-use openai_rust::{chat as openai_chat, futures_util::stream::BoxStream};
+use openai_rust::{futures_util::stream::BoxStream};
 
 #[async_trait]
 pub trait ApiCreation {

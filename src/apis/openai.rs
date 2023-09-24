@@ -1,4 +1,4 @@
-use std::convert::Infallible;
+
 
 use crate::chat;
 use crate::traits::api_client::ApiRequest;
@@ -15,7 +15,7 @@ pub struct OpenaiClient {
 #[async_trait]
 impl ApiRequest for OpenaiClient {
     async fn request(&self, messages: &Vec<Message>) {
-        let mut messages = messages.clone();
+        let messages = messages.clone();
         let chat_args = openai_chat::ChatArguments::new(
             "gpt-3.5-turbo",
             self.chat_messages_to_openai_messages(&messages),
@@ -37,7 +37,7 @@ impl ApiRequest for OpenaiClient {
     ) -> Result<BoxStream<Result<String, Error>>, Error> {
         let chat_args = openai_chat::ChatArguments::new(
             "gpt-3.5-turbo",
-            self.chat_messages_to_openai_messages(&messages),
+            self.chat_messages_to_openai_messages(messages),
         );
         match self.client.create_chat_stream(chat_args).await {
             Ok(s) => {

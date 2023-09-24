@@ -5,7 +5,7 @@ use crate::{
     traits::api_client::ApiRequest,
 };
 use anyhow::Error;
-use crossterm::event::{KeyEvent, KeyModifiers};
+use crossterm::event::{KeyEvent};
 use crossterm::{
     event::{self, EnableMouseCapture, Event, KeyCode, KeyEventKind},
     execute,
@@ -68,7 +68,7 @@ impl App {
                                 .draw(|f| ui(f, &mut self.chat_state, &self.app_mode_state))?;
 
                             // make request and update messages again
-                            let message = self
+                            let _message = self
                                 .api_client
                                 .request(self.chat_state.get_current_chat().get_messages())
                                 .await;
@@ -110,7 +110,7 @@ impl App {
                             self.chat_state.get_current_chat().push("assistant", "temp");
                         }
                         KeyEvent {
-                            code: KeyCode::Char(to_insert),
+                            code: KeyCode::Char(_to_insert),
                             ..
                         } => {
                         }

@@ -11,21 +11,18 @@ use anyhow::Error;
 use api::ApiClient;
 use app::App;
 
-use chat::Message;
+
 use crossterm::{
     cursor::MoveToPreviousLine,
-    event::{DisableMouseCapture, EnableMouseCapture},
     execute,
-    style::{Attribute, Color, PrintStyledContent, Stylize},
     terminal::{
-        disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
-        LeaveAlternateScreen,
+        Clear, ClearType,
     },
 };
-use inquire::{error::InquireResult, Editor, Text};
+use inquire::{Text};
 use openai_rust::futures_util::StreamExt;
 use state::{AppModeState, ChatState};
-use std::io::{self, stdout};
+use std::io::{stdout};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -37,7 +34,7 @@ async fn main() -> Result<(), Error> {
 
     loop {
         let mut content = Text::new("Prompt:").prompt()?;
-        if content == "" {
+        if content.is_empty() {
             content = edit::edit("")?;
             _ = execute!(
                 stdout(),
@@ -71,7 +68,7 @@ async fn main() -> Result<(), Error> {
             }
         }
 
-        println!("");
+        println!();
 
         app.chat_state
             .get_current_chat()
