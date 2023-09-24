@@ -11,17 +11,14 @@ use anyhow::Error;
 use api::ApiClient;
 use app::App;
 
-
 use crossterm::{
     cursor::MoveToPreviousLine,
     execute,
-    terminal::{
-        Clear, ClearType,
-    },
+    terminal::{Clear, ClearType},
 };
 use futures::StreamExt;
 use inquire::Text;
-use state::{AppModeState, ChatState};
+use state::ChatState;
 use std::io::stdout;
 
 #[tokio::main]
@@ -29,11 +26,17 @@ async fn main() -> Result<(), Error> {
     let key = std::env::var("OPENAI_API_KEY").unwrap();
     let api_client = ApiClient::new(&key, api::ClientType::OPENAI);
     let chat_state = ChatState::default();
-    let app_mode_state = AppModeState::default();
-    let mut app = App::new(api_client, chat_state, app_mode_state);
+    let mut app = App::new(api_client, chat_state);
 
     loop {
         let mut content = Text::new("Prompt:").prompt()?;
+
+        if content == "history" {
+            // TODO add history tui screen
+            _ = app.run().await;
+            continue;
+        }
+
         if content.is_empty() {
             content = edit::edit("")?;
             _ = execute!(
