@@ -2,7 +2,7 @@ use crate::apis::openai::OpenaiClient;
 use crate::traits::api_client::{ApiRequest, ApiCreation};
 
 pub enum ClientType {
-    OPENAI,
+    Openai,
 }
 
 pub struct ApiClient {}
@@ -10,7 +10,7 @@ pub struct ApiClient {}
 impl ApiClient {
     pub fn new(api_key: &str, client_type: ClientType) -> Box<dyn ApiRequest> {
         match client_type {
-            ClientType::OPENAI => Box::new(OpenaiClient::new(api_key)),
+            ClientType::Openai => Box::new(OpenaiClient::new(api_key)),
         }
     }
 }

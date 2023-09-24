@@ -1,7 +1,7 @@
 use crate::state::ChatState;
 use ratatui::{prelude::*, widgets::*};
 
-pub fn ui<B: Backend>(f: &mut Frame<B>, chat_state: &mut ChatState) {
+pub fn ui<B: Backend>(f: &mut Frame<B>, _chat_state: &mut ChatState) {
     let size = f.size();
 
     // Words made "loooong" to demonstrate line breaking.

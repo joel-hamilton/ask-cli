@@ -1,10 +1,10 @@
 use crate::ui::ui;
 use crate::{state::ChatState, traits::api_client::ApiRequest};
 use anyhow::Error;
-use crossterm::event::{DisableMouseCapture, KeyEvent};
+use crossterm::event::{DisableMouseCapture};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, LeaveAlternateScreen};
 use crossterm::{
-    event::{self, EnableMouseCapture, Event, KeyCode, KeyEventKind},
+    event::{self, EnableMouseCapture, Event, KeyCode},
     execute,
     // style::{Attribute, Color, PrintStyledContent, Stylize},
     terminal::EnterAlternateScreen,

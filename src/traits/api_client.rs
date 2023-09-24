@@ -1,4 +1,4 @@
-use crate::chat;
+use crate::chat::Message;
 use anyhow::Error;
 use async_trait::async_trait;
 use openai_rust::futures_util::stream::BoxStream;
@@ -10,10 +10,10 @@ pub trait ApiCreation {
 
 #[async_trait]
 pub trait ApiRequest {
-    async fn request(&self, messages: &Vec<chat::Message>);
+    async fn request(&self, messages: &[Message]);
 
    async fn create_chat_stream(
         &self,
-        messages: &Vec<chat::Message>,
+        messages: &[Message],
     ) -> Result<BoxStream<Result<String, Error>>, Error>;
 }

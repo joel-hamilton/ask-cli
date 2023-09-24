@@ -24,7 +24,7 @@ use std::io::stdout;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let key = std::env::var("OPENAI_API_KEY").unwrap();
-    let api_client = ApiClient::new(&key, api::ClientType::OPENAI);
+    let api_client = ApiClient::new(&key, api::ClientType::Openai);
     let chat_state = ChatState::default();
     let mut app = App::new(api_client, chat_state);
 

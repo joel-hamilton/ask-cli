@@ -14,7 +14,7 @@ pub struct OpenaiClient {
 
 #[async_trait]
 impl ApiRequest for OpenaiClient {
-    async fn request(&self, messages: &Vec<Message>) {
+    async fn request(&self, messages: &[Message]) {
         let messages = messages.clone();
         let chat_args = openai_chat::ChatArguments::new(
             "gpt-3.5-turbo",
@@ -33,7 +33,7 @@ impl ApiRequest for OpenaiClient {
 
     async fn create_chat_stream(
         &self,
-        messages: &Vec<chat::Message>,
+        messages: &[chat::Message],
     ) -> Result<BoxStream<Result<String, Error>>, Error> {
         let chat_args = openai_chat::ChatArguments::new(
             "gpt-3.5-turbo",
@@ -71,7 +71,7 @@ impl ApiCreation for OpenaiClient {
 impl OpenaiClient {
     fn chat_messages_to_openai_messages(
         &self,
-        messages: &Vec<Message>,
+        messages: &[Message],
     ) -> Vec<openai_chat::Message> {
         messages
             .iter()
