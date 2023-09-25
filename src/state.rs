@@ -1,19 +1,15 @@
 use crate::chat::Chat;
 
 pub struct ChatState {
-    chat_history: Vec<Chat>,
-    current_chat_index: usize,
+    pub current_chat: Chat,
+    pub current_session_id: Option<i64>,
 }
 
 impl ChatState {
     pub fn default() -> ChatState {
         ChatState {
-            chat_history: vec![Chat::default()],
-            current_chat_index: 0,
+            current_chat: Chat::default(),
+            current_session_id: None,
         }
-    }
-
-    pub fn get_current_chat(&mut self) -> &mut Chat {
-        &mut self.chat_history[self.current_chat_index]
     }
 }

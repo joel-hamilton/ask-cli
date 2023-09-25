@@ -2,14 +2,15 @@ mod api;
 mod apis;
 mod app;
 mod chat;
+mod db;
 mod state;
 mod traits;
 mod ui;
 
 use anyhow::Error;
-
 use api::ApiClient;
 use app::App;
+use db::DB;
 
 use crossterm::{
     cursor::MoveToPreviousLine,
@@ -27,13 +28,17 @@ async fn main() -> Result<(), Error> {
     let api_client = ApiClient::new(&key, api::ClientType::Openai);
     let chat_state = ChatState::default();
     let mut app = App::new(api_client, chat_state);
+    let db = DB::new().await;
+    let _ = db.migrate().await;
 
     loop {
         let mut content = Text::new("Prompt:").prompt()?;
 
         if content == "history" {
-            // TODO add history tui screen
-            _ = app.run().await;
+            let sessions = db.get_sessions().await.unwrap();
+            let chosen_session_id = app.run(&sessions).await.unwrap();
+            println!("{:?}", chosen_session_id);
+            // TODO load the history
             continue;
         }
 
@@ -48,11 +53,19 @@ async fn main() -> Result<(), Error> {
             print!("Prompt: {}", content);
         }
 
-        app.chat_state.get_current_chat().push("user", &content);
+        app.chat_state.current_chat.push("user", &content);
+        let session_id = db
+            .add_chat("user", &content, app.chat_state.current_session_id)
+            .await
+            .unwrap();
+        if let None = app.chat_state.current_session_id {
+            app.chat_state.current_session_id = Some(session_id);
+        }
+
         let mut complete_response: String = "".to_owned();
         match app
             .api_client
-            .create_chat_stream(app.chat_state.get_current_chat().get_messages())
+            .create_chat_stream(app.chat_state.current_chat.get_messages())
             .await
         {
             Ok(mut stream) => {
@@ -74,11 +87,19 @@ async fn main() -> Result<(), Error> {
         println!();
 
         app.chat_state
-            .get_current_chat()
+            .current_chat
             .get_messages()
             .push(chat::Message {
                 role: "assistant".to_owned(),
-                content: complete_response,
+                content: complete_response.to_owned(),
             });
+
+        let _ = db
+            .add_chat(
+                "assistant",
+                &complete_response,
+                app.chat_state.current_session_id,
+            )
+            .await;
     }
 }

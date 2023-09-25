@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\nUPDATE chat_sessions\nSET updated_at = CURRENT_TIMESTAMP\nWHERE id = ?1\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "f42459b52b65ebbdaae09270bc530e7ab21f8ed82c3178db178a328137811bc8"
+}

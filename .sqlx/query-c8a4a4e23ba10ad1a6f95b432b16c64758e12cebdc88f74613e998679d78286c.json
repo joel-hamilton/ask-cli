@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\nINSERT INTO chat_messages\n(session_id, role, content, created_at)\nVALUES\n(?1, ?2, ?3, CURRENT_TIMESTAMP)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "c8a4a4e23ba10ad1a6f95b432b16c64758e12cebdc88f74613e998679d78286c"
+}

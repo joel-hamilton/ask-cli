@@ -1,17 +1,17 @@
+use crate::chat::ChatSession;
+use crate::db::DB;
 use crate::ui::ui;
 use crate::{state::ChatState, traits::api_client::ApiRequest};
 use anyhow::Error;
-use crossterm::event::{DisableMouseCapture};
+use crossterm::event::DisableMouseCapture;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, LeaveAlternateScreen};
 use crossterm::{
     event::{self, EnableMouseCapture, Event, KeyCode},
     execute,
-    // style::{Attribute, Color, PrintStyledContent, Stylize},
     terminal::EnterAlternateScreen,
 };
 use ratatui::prelude::*;
 
-// use inquire::{error::InquireResult, Editor, Text};
 use std::io::{self};
 pub struct App {
     pub api_client: Box<dyn ApiRequest>,
@@ -34,7 +34,7 @@ impl App {
         Ok(terminal)
     }
 
-    pub async fn run(&mut self) -> io::Result<()> {
+    pub async fn run(&mut self, sessions: &[ChatSession]) -> anyhow::Result<i64> {
         enable_raw_mode()?;
         let mut stdout = io::stdout();
         execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
@@ -42,7 +42,7 @@ impl App {
         // we will need to re-create term after returning from spawned editor process
         let mut terminal = self.get_terminal().unwrap();
         loop {
-            terminal.draw(|f| ui(f, &mut self.chat_state))?;
+            terminal.draw(|f| ui(f, &mut self.chat_state, sessions))?;
 
             if let Event::Key(key) = event::read()? {
                 match key.code {
@@ -54,7 +54,11 @@ impl App {
                             DisableMouseCapture
                         )?;
                         terminal.show_cursor()?;
-                        return Ok(());
+                        return Ok(-1);
+                    }
+                    KeyCode::Char('1') => {
+                        // TODO clear this screen and disable raw mode
+                        return Ok(1);
                     }
                     _ => {}
                 }
