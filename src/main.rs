@@ -17,10 +17,11 @@ use crossterm::{
     execute,
     terminal::{Clear, ClearType},
 };
-use futures::StreamExt;
-use inquire::Text;
+use inquire::{Select, Text};
 use state::ChatState;
 use std::io::stdout;
+
+use crate::chat::Chat;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -36,9 +37,18 @@ async fn main() -> Result<(), Error> {
 
         if content == "history" {
             let sessions = db.get_sessions().await.unwrap();
-            let chosen_session_id = app.run(&sessions).await.unwrap();
-            println!("{:?}", chosen_session_id);
-            // TODO load the history
+            let session = Select::new("Load a chat session", sessions)
+                .prompt()
+                .unwrap();
+
+            let session_messages = db.get_session(session.id).await.unwrap();
+            let new_chat = Chat::new(&session_messages);
+            app.chat_state.current_chat = new_chat;
+            app.chat_state.current_session_id = Some(session.id);
+
+            for message in session_messages {
+                println!("{}: {}", message.role, message.content);
+            }
             continue;
         }
 
@@ -63,28 +73,31 @@ async fn main() -> Result<(), Error> {
         }
 
         let mut complete_response: String = "".to_owned();
-        match app
-            .api_client
-            .create_chat_stream(app.chat_state.current_chat.get_messages())
-            .await
-        {
-            Ok(mut stream) => {
-                while let Some(item) = stream.next().await {
-                    match item {
-                        Ok(message) => {
-                            complete_response += &message;
-                            print!("{}", message);
-                        }
-                        Err(_e) => {}
-                    }
-                }
-            }
-            Err(e) => {
-                println!("Error: {}", e);
-            }
-        }
+        // match app
+        //     .api_client
+        //     .create_chat_stream(app.chat_state.current_chat.get_messages())
+        //     .await
+        // {
+        //     Ok(mut stream) => {
+        //         while let Some(item) = stream.next().await {
+        //             match item {
+        //                 Ok(message) => {
+        //                     complete_response += &message;
+        //                     print!("{}", message);
+        //                 }
+        //                 Err(_e) => {}
+        //             }
+        //         }
+        //     }
+        //     Err(e) => {
+        //         println!("Error: {}", e);
+        //     }
+        // }
 
-        println!();
+        // println!();
+
+        complete_response = String::from("testing!");
+        println!("{}", complete_response);
 
         app.chat_state
             .current_chat

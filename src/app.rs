@@ -1,5 +1,4 @@
 use crate::chat::ChatSession;
-use crate::db::DB;
 use crate::ui::ui;
 use crate::{state::ChatState, traits::api_client::ApiRequest};
 use anyhow::Error;
