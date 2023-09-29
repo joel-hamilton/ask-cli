@@ -18,7 +18,7 @@ impl ApiRequest for OpenaiClient {
         let messages = messages.clone();
         let chat_args = openai_chat::ChatArguments::new(
             "gpt-3.5-turbo",
-            self.chat_messages_to_openai_messages(&messages),
+            self.chat_messages_to_openai_messages(messages),
         );
 
         let mut res = self.client.create_chat_stream(chat_args).await.unwrap();

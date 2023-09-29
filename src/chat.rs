@@ -21,17 +21,12 @@ pub struct Message {
 }
 
 #[derive(Clone)]
+#[derive(Default)]
 pub struct Chat {
     messages: Vec<Message>,
 }
 
-impl Default for Chat {
-    fn default() -> Chat {
-        Chat {
-            messages: Vec::new(),
-        }
-    }
-}
+
 
 impl Chat {
     pub fn new(messages: &Vec<Message>) -> Self {

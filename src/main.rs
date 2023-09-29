@@ -5,7 +5,6 @@ mod chat;
 mod db;
 mod state;
 mod traits;
-mod ui;
 
 use anyhow::Error;
 use api::ApiClient;
@@ -17,6 +16,7 @@ use crossterm::{
     execute,
     terminal::{Clear, ClearType},
 };
+use futures::StreamExt;
 use inquire::{Select, Text};
 use state::ChatState;
 use std::io::stdout;
@@ -68,36 +68,33 @@ async fn main() -> Result<(), Error> {
             .add_chat("user", &content, app.chat_state.current_session_id)
             .await
             .unwrap();
-        if let None = app.chat_state.current_session_id {
+        if app.chat_state.current_session_id.is_none() {
             app.chat_state.current_session_id = Some(session_id);
         }
 
         let mut complete_response: String = "".to_owned();
-        // match app
-        //     .api_client
-        //     .create_chat_stream(app.chat_state.current_chat.get_messages())
-        //     .await
-        // {
-        //     Ok(mut stream) => {
-        //         while let Some(item) = stream.next().await {
-        //             match item {
-        //                 Ok(message) => {
-        //                     complete_response += &message;
-        //                     print!("{}", message);
-        //                 }
-        //                 Err(_e) => {}
-        //             }
-        //         }
-        //     }
-        //     Err(e) => {
-        //         println!("Error: {}", e);
-        //     }
-        // }
+        match app
+            .api_client
+            .create_chat_stream(app.chat_state.current_chat.get_messages())
+            .await
+        {
+            Ok(mut stream) => {
+                while let Some(item) = stream.next().await {
+                    match item {
+                        Ok(message) => {
+                            complete_response += &message;
+                            print!("{}", message);
+                        }
+                        Err(_e) => {}
+                    }
+                }
+            }
+            Err(e) => {
+                println!("Error: {}", e);
+            }
+        }
 
-        // println!();
-
-        complete_response = String::from("testing!");
-        println!("{}", complete_response);
+        println!();
 
         app.chat_state
             .current_chat

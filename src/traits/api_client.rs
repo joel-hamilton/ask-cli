@@ -1,4 +1,4 @@
-use crate::chat::Message;
+use crate::chat::;
 use anyhow::Error;
 use async_trait::async_trait;
 use openai_rust::futures_util::stream::BoxStream;
