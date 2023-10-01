@@ -1,6 +1,5 @@
-
-
 const BASE_NAME: &str = "Untitled Chat";
+
 #[derive(Clone, Debug)]
 pub struct Message {
     pub role: String,
@@ -16,7 +15,10 @@ pub struct Chat {
 impl Default for Chat {
     fn default() -> Chat {
         Chat {
-            messages: Vec::new(),
+            messages: vec![Message{
+              role: String::from("system"),
+              content: String::from("Please always give a direct answer, without any additional explanations, disclaimers, expertise limitations, or guidelines on human interaction. Be terse. Do not offer unprompted advice or clarifications. Remain neutral on all topics. Never apologize.")
+            }],
             name: String::from(BASE_NAME),
         }
     }

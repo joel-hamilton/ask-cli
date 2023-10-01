@@ -16,9 +16,9 @@ fi
 
 # Choose binary to download
 if [ "$UNAME" = "Darwin" ] ; then
-    url="https://github.com/joel-hamilton/ask-cli//releases/latest/download/ask-cli-aarch64-apple-darwin.tar.gz"
+    url="https://github.com/joel-hamilton/ask-cli/releases/latest/download/ask-cli-aarch64-apple-darwin.tar.gz"
 elif [ "$UNAME" = "Linux" ] ; then
-    url="https://github.com/joel-hamilton/ask-cli//releases/latest/download/ask-cli-x86_64-unknown-linux-gnu.tar.gz"
+    url="https://github.com/joel-hamilton/ask-cli/releases/latest/download/ask-cli-x86_64-unknown-linux-gnu.tar.gz"
 fi
 
 # Downloading the correct binary
