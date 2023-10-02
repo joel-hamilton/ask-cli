@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 async-trait = "0.1.73"
-clap = { version = "4.4.0", features = ["derive"]}
 crossterm = "0.27.0"
 edit = "0.1.4"
 futures = "0.3.28"
