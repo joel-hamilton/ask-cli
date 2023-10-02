@@ -1,4 +1,3 @@
-use crate::ui::ui;
 use crate::{state::ChatState, traits::api_client::ApiRequest};
 use anyhow::Error;
 use crossterm::event::{DisableMouseCapture};
@@ -9,7 +8,6 @@ use crossterm::{
     // style::{Attribute, Color, PrintStyledContent, Stylize},
     terminal::EnterAlternateScreen,
 };
-use ratatui::prelude::*;
 
 // use inquire::{error::InquireResult, Editor, Text};
 use std::io::{self};
@@ -23,42 +21,6 @@ impl App {
         App {
             api_client,
             chat_state,
-        }
-    }
-
-    pub fn get_terminal(&self) -> Result<Terminal<CrosstermBackend<io::Stdout>>, Error> {
-        let mut stdout = io::stdout();
-        execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-        let backend = CrosstermBackend::new(stdout);
-        let terminal: Terminal<CrosstermBackend<io::Stdout>> = Terminal::new(backend)?;
-        Ok(terminal)
-    }
-
-    pub async fn run(&mut self) -> io::Result<()> {
-        enable_raw_mode()?;
-        let mut stdout = io::stdout();
-        execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-
-        // we will need to re-create term after returning from spawned editor process
-        let mut terminal = self.get_terminal().unwrap();
-        loop {
-            terminal.draw(|f| ui(f, &mut self.chat_state))?;
-
-            if let Event::Key(key) = event::read()? {
-                match key.code {
-                    KeyCode::Char('q') => {
-                        disable_raw_mode()?;
-                        execute!(
-                            terminal.backend_mut(),
-                            LeaveAlternateScreen,
-                            DisableMouseCapture
-                        )?;
-                        terminal.show_cursor()?;
-                        return Ok(());
-                    }
-                    _ => {}
-                }
-            }
         }
     }
 }

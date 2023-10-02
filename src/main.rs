@@ -4,7 +4,6 @@ mod app;
 mod chat;
 mod state;
 mod traits;
-mod ui;
 
 use anyhow::Error;
 
@@ -33,7 +32,7 @@ async fn main() -> Result<(), Error> {
 
         if content == "history" {
             // TODO add history tui screen
-            _ = app.run().await;
+            // _ = app.run().await;
             continue;
         }
 
